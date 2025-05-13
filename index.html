@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Draw Phat Buds!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            width: 200px;
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #namesList {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            min-height: 100px;
+        }
+
+        .name-item {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 5px;
+            background-color: #e0e0e0;
+            border-radius: 3px;
+        }
+
+        #result {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff5722;
+            margin: 20px 0;
+            min-height: 30px;
+        }
+
+        .spin-animation {
+            animation: spin 0.1s infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lucky Draw Roulette</h1>
+        
+        <div class="input-group">
+            <input type="text" id="nameInput" placeholder="Enter name">
+            <button onclick="addName()">Add Name</button>
+            <button onclick="clearList()">Clear List</button>
+        </div>
+
+        <div id="namesList"></div>
+
+        <button onclick="spinRoulette()" style="padding: 15px 30px;">SPIN!</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let names = [];
+        let isSpinning = false;
+
+        function addName() {
+            const nameInput = document.getElementById('nameInput');
+            const name = nameInput.value.trim();
+            
+            if (name && !names.includes(name)) {
+                names.push(name);
+                updateNamesList();
+                nameInput.value = '';
+            }
+        }
+
+        function clearList() {
+            names = [];
+            updateNamesList();
+            document.getElementById('result').textContent = '';
+        }
+
+        function updateNamesList() {
+            const namesList = document.getElementById('namesList');
+            namesList.innerHTML = names.map(name => 
+                `<div class="name-item">${name}</div>`
+            ).join('');
+        }
+
+        function spinRoulette() {
+            if (names.length === 0) {
+                alert('Please add some names first!');
+                return;
+            }
+
+            if (!isSpinning) {
+                isSpinning = true;
+                const resultElement = document.getElementById('result');
+                resultElement.textContent = 'Spinning...';
+                
+                const spinDuration = 3000; // 3 seconds
+                const startTime = Date.now();
+                
+                const spinInterval = setInterval(() => {
+                    const randomIndex = Math.floor(Math.random() * names.length);
+                    resultElement.textContent = names[randomIndex];
+                }, 50);
+
+                setTimeout(() => {
+                    clearInterval(spinInterval);
+                    const finalIndex = Math.floor(Math.random() * names.length);
+                    resultElement.textContent = `Winner: ${names[finalIndex]}!`;
+                    isSpinning = false;
+                }, spinDuration);
+            }
+        }
+    </script>
+</body>
+</html>
