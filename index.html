@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lucky Draw Phat Buds!</title>
+    <title>Giveaway-Winner Lucky Draw</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,9 +22,12 @@
 
         .input-group {
             margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
 
-        input[type="text"] {
+        input[type="text"], input[type="number"] {
             padding: 10px;
             width: 200px;
             margin-right: 10px;
@@ -37,10 +40,16 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            transition: background-color 0.3s;
         }
 
         button:hover {
             background-color: #45a049;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
         }
 
         #namesList {
@@ -48,22 +57,40 @@
             padding: 10px;
             border: 1px solid #ddd;
             min-height: 100px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
         }
 
         .name-item {
-            display: inline-block;
             padding: 5px 10px;
-            margin: 5px;
             background-color: #e0e0e0;
             border-radius: 3px;
         }
 
         #result {
-            font-size: 24px;
-            font-weight: bold;
-            color: #ff5722;
             margin: 20px 0;
-            min-height: 30px;
+            padding: 15px;
+            background-color: #fff3e0;
+            border-radius: 5px;
+        }
+
+        .winner-item {
+            padding: 10px;
+            margin: 5px 0;
+            background-color: #e8f5e9;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .rank-badge {
+            background-color: #ff5722;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.9em;
         }
 
         .spin-animation {
@@ -78,7 +105,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Lucky Draw Roulette</h1>
+        <h1>Giveaway Lucky Draw</h1>
         
         <div class="input-group">
             <input type="text" id="nameInput" placeholder="Enter name">
@@ -86,9 +113,12 @@
             <button onclick="clearList()">Clear List</button>
         </div>
 
-        <div id="namesList"></div>
+        <div class="input-group">
+            <input type="number" id="numWinners" placeholder="Number of winners" min="1">
+            <button onclick="spinRoulette()" style="padding: 15px 30px;">SPIN!</button>
+        </div>
 
-        <button onclick="spinRoulette()" style="padding: 15px 30px;">SPIN!</button>
+        <div id="namesList"></div>
         <div id="result"></div>
     </div>
 
@@ -110,7 +140,8 @@
         function clearList() {
             names = [];
             updateNamesList();
-            document.getElementById('result').textContent = '';
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('numWinners').value = '';
         }
 
         function updateNamesList() {
@@ -121,31 +152,71 @@
         }
 
         function spinRoulette() {
+            const numWinners = parseInt(document.getElementById('numWinners').value);
+            
             if (names.length === 0) {
                 alert('Please add some names first!');
+                return;
+            }
+            
+            if (isNaN(numWinners) || numWinners < 1) {
+                alert('Please enter valid number of winners!');
+                return;
+            }
+            
+            if (numWinners > names.length) {
+                alert('Number of winners cannot exceed number of participants!');
                 return;
             }
 
             if (!isSpinning) {
                 isSpinning = true;
                 const resultElement = document.getElementById('result');
-                resultElement.textContent = 'Spinning...';
+                resultElement.innerHTML = 'Spinning...';
                 
-                const spinDuration = 3000; // 3 seconds
+                const spinDuration = 3000;
                 const startTime = Date.now();
                 
+                let remainingNames = [...names];
+                const winners = [];
+                
+                // Spin animation
                 const spinInterval = setInterval(() => {
-                    const randomIndex = Math.floor(Math.random() * names.length);
-                    resultElement.textContent = names[randomIndex];
+                    const randomIndex = Math.floor(Math.random() * remainingNames.length);
+                    resultElement.textContent = remainingNames[randomIndex];
                 }, 50);
 
                 setTimeout(() => {
                     clearInterval(spinInterval);
-                    const finalIndex = Math.floor(Math.random() * names.length);
-                    resultElement.textContent = `Winner: ${names[finalIndex]}!`;
+                    
+                    // Pick winners
+                    for (let i = 0; i < numWinners; i++) {
+                        const randomIndex = Math.floor(Math.random() * remainingNames.length);
+                        winners.push(remainingNames[randomIndex]);
+                        remainingNames.splice(randomIndex, 1);
+                    }
+                    
+                    // Update names list and display results
+                    names = remainingNames;
+                    updateNamesList();
+                    
+                    // Display winners in reverse rank order
+                    resultElement.innerHTML = winners.map((winner, index) => `
+                        <div class="winner-item">
+                            <span class="rank-badge">${numWinners - index}${getOrdinalSuffix(numWinners - index)} Place</span>
+                            ${winner}
+                        </div>
+                    `).join('');
+
                     isSpinning = false;
                 }, spinDuration);
             }
+        }
+
+        function getOrdinalSuffix(n) {
+            const s = ["th", "st", "nd", "rd"];
+            const v = n % 100;
+            return s[(v - 20) % 10] || s[v] || s[0];
         }
     </script>
 </body>
